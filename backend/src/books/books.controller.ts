@@ -22,8 +22,16 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) { }
 
   @Get()
-  findAll(@Request() req: { user: { userId: number } }, @Query('search') search?: string) {
-    return this.booksService.findAll(req.user.userId, search);
+  findAll(
+    @Request() req: { user: { userId: number } },
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) || 1 : 1;
+    const limitNum = limit ? parseInt(limit, 10) || 10 : 10;
+
+    return this.booksService.findAll(req.user.userId, search, pageNum, limitNum);
   }
 
   @Get(':id')

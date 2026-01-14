@@ -163,6 +163,9 @@ export default function BooksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const limit = 9;
   const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const router = useRouter();
 
@@ -181,15 +184,17 @@ export default function BooksPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadBooks();
+      loadBooks(1);
     }
   }, [isAuthenticated]);
 
-  const loadBooks = async (searchTerm?: string) => {
+  const loadBooks = async (pageToLoad: number, searchTerm?: string) => {
     try {
       setIsLoading(true);
-      const data = await booksService.getAll(searchTerm);
-      setBooks(data);
+      const resp = await booksService.getAll(searchTerm, pageToLoad, limit);
+      setBooks(resp.data);
+      setTotal(resp.total);
+      setPage(resp.page);
     } catch (error) {
       console.error('Erro ao carregar livros:', error);
     } finally {
@@ -199,7 +204,8 @@ export default function BooksPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    loadBooks(search);
+    setPage(1);
+    loadBooks(1, search);
   };
 
   const handleDelete = async (id: number) => {
@@ -223,7 +229,16 @@ export default function BooksPage() {
       try {
         setDeleteId(id);
         await booksService.delete(id);
-        setBooks(books.filter((book) => book.id !== id));
+        const newBooks = books.filter((book) => book.id !== id);
+        setBooks(newBooks);
+        setTotal((t) => Math.max(0, t - 1));
+
+        // If after deletion the current page became empty, try load previous page
+        if (newBooks.length === 0 && page > 1) {
+          const prev = page - 1;
+          setPage(prev);
+          await loadBooks(prev, search);
+        }
         
         Swal.fire({
           title: 'Excluído!',
@@ -416,6 +431,42 @@ export default function BooksPage() {
               </div>
             </SortableContext>
           </DndContext>
+        )}
+        {/* Pagination Controls */}
+        {!isLoading && total > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+            <div className="text-sm text-gray-400">
+              Página {page} de {Math.max(1, Math.ceil(total / limit))} — {total} livros
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (page > 1) {
+                    const prev = page - 1;
+                    setPage(prev);
+                    loadBooks(prev, search);
+                  }
+                }}
+                disabled={page === 1}
+                className="px-4 py-2 bg-gray-800 text-gray-300 rounded disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <button
+                onClick={() => {
+                  if (page * limit < total) {
+                    const next = page + 1;
+                    setPage(next);
+                    loadBooks(next, search);
+                  }
+                }}
+                disabled={page * limit >= total}
+                className="px-4 py-2 bg-gray-800 text-gray-300 rounded disabled:opacity-50"
+              >
+                Próxima
+              </button>
+            </div>
+          </div>
         )}
       </main>
     </div>

@@ -25,10 +25,17 @@ export interface UpdateBookData {
     description?: string;
 }
 
+export interface PaginatedBooks {
+    data: Book[];
+    total: number;
+    page: number;
+    limit: number;
+}
 export const booksService = {
-    async getAll(search?: string): Promise<Book[]> {
-        const params = search ? { search } : {};
-        const response = await api.get<Book[]>('/books', { params });
+    async getAll(search?: string, page = 1, limit = 9): Promise<PaginatedBooks> {
+        const params: any = { page, limit };
+        if (search) params.search = search;
+        const response = await api.get<PaginatedBooks>('/books', { params });
         return response.data;
     },
 

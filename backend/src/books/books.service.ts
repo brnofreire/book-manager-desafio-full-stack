@@ -7,17 +7,27 @@ import { UpdateBookDto } from './dto/update-book.dto';
 export class BooksService {
   constructor(private prisma: PrismaService) { }
 
-  async findAll(userId: number, search?: string) {
+  async findAll(userId: number, search?: string, page = 1, limit = 10) {
     const where: { userId: number; title?: { contains: string } } = { userId };
 
     if (search) {
       where.title = { contains: search };
     }
 
-    return this.prisma.book.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
+    const take = limit;
+    const skip = (page - 1) * take;
+
+    const [data, total] = await Promise.all([
+      this.prisma.book.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.book.count({ where }),
+    ]);
+
+    return { data, total, page, limit: take };
   }
 
   async findOne(id: number, userId: number) {
