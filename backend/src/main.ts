@@ -7,7 +7,7 @@ async function bootstrap() {
   
   // Habilitar CORS para o frontend
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: ['https://book-manager-desafio-full-stack-n2ew.onrender.com', 'http://localhost:3000', 'http://localhost:3001'],
     credentials: true,
   });
 
