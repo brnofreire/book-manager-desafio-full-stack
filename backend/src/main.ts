@@ -4,10 +4,21 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  // Habilitar CORS para o frontend
+
+  const allowedOrigins = [
+    'https://book-manager-desafio-full-stack-n2ew.onrender.com',
+    'https://book-manager-desafio-full-stack-539tm7i2d-brnofreires-projects.vercel.app',
+    'https://book-manager-desafio-full-stack-azure.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+
   app.enableCors({
-    origin: ['https://book-manager-desafio-full-stack-n2ew.onrender.com', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow server-to-server or non-browser requests
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS policy: origin not allowed'), false);
+    },
     credentials: true,
   });
 
