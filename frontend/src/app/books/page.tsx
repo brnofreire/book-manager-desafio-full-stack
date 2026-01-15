@@ -340,7 +340,8 @@ export default function BooksPage() {
                 type="button"
                 onClick={() => {
                   setSearch('');
-                  loadBooks();
+                  setPage(1);
+                  loadBooks(1, '');
                 }}
                 className="px-4 py-2.5 text-gray-400 hover:text-gray-200 transition"
               >
