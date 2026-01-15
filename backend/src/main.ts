@@ -7,7 +7,6 @@ async function bootstrap() {
 
   const allowedOrigins = [
     'https://book-manager-desafio-full-stack-n2ew.onrender.com',
-    'https://book-manager-desafio-full-stack-539tm7i2d-brnofreires-projects.vercel.app',
     'https://book-manager-desafio-full-stack-azure.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
